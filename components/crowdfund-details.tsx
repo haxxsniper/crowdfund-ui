@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useReadContract } from "wagmi";
 import { crowdfundAbi } from "./abi";
 import { CROWDFUND_CONTRACT_ADDRESS_BAOBAB } from "./contracts";
@@ -7,8 +8,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 export default function CrowdFundDetails() {
+  const [campaignId, setCampaignId] = useState(0); // [1, 2, 3, 4, 5]
   const {
     data: campaignDetails,
     isPending,
@@ -19,33 +22,48 @@ export default function CrowdFundDetails() {
     abi: crowdfundAbi,
     address: CROWDFUND_CONTRACT_ADDRESS_BAOBAB,
     functionName: "campaigns",
-    args: [BigInt(1)],
+    args: [// if campaignId is null or undefined, use 0
+      
+      campaignId ? BigInt(campaignId) : BigInt(0)
+    ],
+    // query: {
+    //   // if campaignId is 0, don't query
+    //   enabled: !!campaignId,
+    // },
   });
+
+  function handleCampaignIdChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setCampaignId(parseInt(event.target.value));
+  }
+
   return (
     <div className="flex flex-col gap-2 rounded-lg p-4 shadow-xl w-full lg:max-w-3xl">
       <div className="flex flex-row justify-between">
-        <h1 className="text-2xl font-semibold">My funded amount</h1>
+        <h1 className="text-2xl font-semibold">Campaign details</h1>
         <Button variant="outline" size="icon" onClick={() => refetch()}>
           <RefreshCcw className="h-4 w-4" />
         </Button>
       </div>
+      <Input className="w-full" placeholder="Enter campaign ID" onChange={handleCampaignIdChange}/>
       <p className="italic text-sm">
-        Total amount of KLAY that I have funded the contract
+        Current campaign details
       </p>
       {isPending && isFetched ? (
         <Skeleton className="w-[50px] h-[20px]" />
       ) : isSuccess ? (
-        <p className="text-xl font-mono flex flex-row items-center">
+        <ul className="text-xl font-mono">
           {
-            // return the entire campaignDetails as a string
-            campaignDetails.toString()
+            campaignDetails?.map((detail, index) => (
+              <li key={index}>{detail.toString()}</li>
+            ))
           }
-        </p>
+        </ul>
       ) : (
         <Badge className="w-fit" variant="secondary">
-          Connect to see your funded amount
+          Enter a campaign ID to get details
         </Badge>
       )}
     </div>
   );
 }
+

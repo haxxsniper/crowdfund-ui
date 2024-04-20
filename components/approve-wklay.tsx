@@ -116,7 +116,7 @@ export default function ApproveWKLAY() {
                 Please wait
               </Button>
             ) : (
-              <Button type="submit">Wrap</Button>
+              <Button type="submit">Approve</Button>
             )}
           </form>
         </Form>
