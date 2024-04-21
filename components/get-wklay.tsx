@@ -29,11 +29,14 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
   useReadContract,
+  useChainId
 } from "wagmi";
 import { wklayAbi, crowdfundAbi } from "./abi";
 import {
   WKLAY_CONTRACT_ADDRESS_BAOBAB,
+  WKLAY_CONTRACT_ADDRESS_CYPRESS,
   CROWDFUND_CONTRACT_ADDRESS_BAOBAB,
+  CROWDFUND_CONTRACT_ADDRESS_CYPRESS
 } from "./contracts";
 import { parseEther } from "viem";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +53,7 @@ const formSchema = z.object({
 
 export default function GetWKLAY() {
   const { toast } = useToast();
+  const chainId = useChainId()
   const {
     data: addressWKLAY,
     isPending: checkTokenIsPending,
@@ -57,7 +61,7 @@ export default function GetWKLAY() {
     isSuccess,
   } = useReadContract({
     abi: crowdfundAbi,
-    address: CROWDFUND_CONTRACT_ADDRESS_BAOBAB,
+    address: chainId === 1001 ? CROWDFUND_CONTRACT_ADDRESS_BAOBAB : CROWDFUND_CONTRACT_ADDRESS_CYPRESS,
     functionName: "token",
   });
   const { data: hash, error, isPending, writeContract } = useWriteContract();
@@ -68,7 +72,7 @@ export default function GetWKLAY() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     writeContract({
       abi: wklayAbi,
-      address: WKLAY_CONTRACT_ADDRESS_BAOBAB,
+      address: chainId === 1001 ? WKLAY_CONTRACT_ADDRESS_BAOBAB : WKLAY_CONTRACT_ADDRESS_CYPRESS,
       functionName: "deposit",
       value: parseEther(values.amount.toString()),
     });
@@ -105,7 +109,7 @@ export default function GetWKLAY() {
             <a
               target="_blank"
               className="text-blue-500 underline"
-              href={`https://baobab.klaytnfinder.io/account/${addressWKLAY}`}
+              href={chainId === 1001 ? `https://baobab.klaytnfinder.io/account/${addressWKLAY}` : `https://klaytnfinder.io/account/${addressWKLAY}`}
             >
               {truncateAddress(addressWKLAY)}
             </a>
@@ -159,7 +163,7 @@ export default function GetWKLAY() {
             <a
               target="_blank"
               className="text-blue-500 underline"
-              href={`https://baobab.klaytnfinder.io/tx/${hash}`}
+              href={chainId === 1001 ? `https://baobab.klaytnfinder.io/tx/${hash}`: `https://klaytnfinder.io/tx/${hash}`}
             >
               {truncateAddress(hash)}
             </a>

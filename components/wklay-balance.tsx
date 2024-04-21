@@ -1,8 +1,8 @@
 "use client";
 
-import { useReadContract } from "wagmi";
+import { useReadContract, useChainId } from "wagmi";
 import { wklayAbi } from "./abi";
-import { WKLAY_CONTRACT_ADDRESS_BAOBAB } from "./contracts";
+import { WKLAY_CONTRACT_ADDRESS_BAOBAB, WKLAY_CONTRACT_ADDRESS_CYPRESS } from "./contracts";
 import { formatEther } from "viem";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAccount } from "wagmi";
@@ -12,6 +12,7 @@ import { RefreshCcw } from "lucide-react";
 
 export default function MyWKLAY() {
   const account = useAccount();
+  const chainId = useChainId()
   const {
     data: amountFunded,
     isPending,
@@ -20,7 +21,7 @@ export default function MyWKLAY() {
     refetch
   } = useReadContract({
     abi: wklayAbi,
-    address: WKLAY_CONTRACT_ADDRESS_BAOBAB,
+    address: chainId === 1001 ? WKLAY_CONTRACT_ADDRESS_BAOBAB : WKLAY_CONTRACT_ADDRESS_CYPRESS,
     functionName: "balanceOf",
     args: [account.address ?? "0x0"],
     query: {
