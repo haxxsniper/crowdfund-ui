@@ -23,43 +23,28 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   type BaseError,
   useWaitForTransactionReceipt,
   useWriteContract,
-  useReadContract,
 } from "wagmi";
-import { wklayAbi, crowdfundAbi } from "./abi";
-import {
-  WKLAY_CONTRACT_ADDRESS_BAOBAB,
-  CROWDFUND_CONTRACT_ADDRESS_BAOBAB,
-} from "./contracts";
+import { crowdfundAbi } from "./abi";
+import { CROWDFUND_CONTRACT_ADDRESS_BAOBAB } from "./contracts";
 import { parseEther } from "viem";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Check } from "lucide-react";
 
 const formSchema = z.object({
-  amount: z.coerce
+  crowdFundId: z.coerce
     .number({
-      required_error: "Amount is required",
-      invalid_type_error: "Amount must be a number",
+      required_error: "crowdFundId is required",
+      invalid_type_error: "crowdFundId must be a number",
     })
-    .positive({ message: "Amount must be positive" }),
+    .positive({ message: "crowdFundId must be positive" }),
 });
 
-export default function GetWKLAY() {
+export default function Claim() {
   const { toast } = useToast();
-  const {
-    data: addressWKLAY,
-    isPending: checkTokenIsPending,
-    isFetched,
-    isSuccess,
-  } = useReadContract({
-    abi: crowdfundAbi,
-    address: CROWDFUND_CONTRACT_ADDRESS_BAOBAB,
-    functionName: "token",
-  });
   const { data: hash, error, isPending, writeContract } = useWriteContract();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -67,10 +52,12 @@ export default function GetWKLAY() {
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
     writeContract({
-      abi: wklayAbi,
-      address: WKLAY_CONTRACT_ADDRESS_BAOBAB,
-      functionName: "deposit",
-      value: parseEther(values.amount.toString()),
+      abi: crowdfundAbi,
+      address: CROWDFUND_CONTRACT_ADDRESS_BAOBAB,
+      functionName: "claim",
+      args: [
+        BigInt(values.crowdFundId)
+      ]
     });
     if (error) {
       toast({
@@ -93,46 +80,30 @@ export default function GetWKLAY() {
   return (
     <Card className="w-full border-0 shadow-lg lg:max-w-3xl">
       <CardHeader>
-        <CardTitle>Wrap KLAY</CardTitle>
+        <CardTitle>Claim from a crowfund</CardTitle>
         <CardDescription>
-          Before contributing to the crowdfund, you must wrap your KLAY.
+          Use this form to claim from a crowdfund.
         </CardDescription>
-        {checkTokenIsPending && isFetched ? (
-          <Skeleton className="w-[50px] h-[20px]" />
-        ) : isSuccess ? (
-          <span className="text-sm font-mono flex flex-row gap-2">
-            WKLAY address:
-            <a
-              target="_blank"
-              className="text-blue-500 underline"
-              href={`https://baobab.klaytnfinder.io/account/${addressWKLAY}`}
-            >
-              {truncateAddress(addressWKLAY)}
-            </a>
-          </span>
-        ) : (
-          <Skeleton className="w-[50px] h-[20px]" />
-        )}
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
               control={form.control}
-              name="amount"
+              name="crowdFundId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount</FormLabel>
+                  <FormLabel>CrowFund ID</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
-                      placeholder="Enter an amount in KLAY"
+                      placeholder="Enter the ID of the crowdfund"
                       {...field}
                       value={field.value ?? ""}
                     />
                   </FormControl>
                   <FormDescription>
-                    You will wrap with this amount.
+                    This will be the ID of the crowdfund you want to claim from.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -144,7 +115,7 @@ export default function GetWKLAY() {
                 Please wait
               </Button>
             ) : (
-              <Button type="submit">Wrap</Button>
+              <Button type="submit">Launch</Button>
             )}
           </form>
         </Form>

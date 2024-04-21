@@ -7,6 +7,8 @@ import LaunchEventList from '@/components/launch-event-list';
 import Pledge from '@/components/pledge';
 import CrowdFundDetails from '@/components/crowdfund-details';
 import ApproveWKLAY from '@/components/approve-wklay';
+import UnPledge from '@/components/unpledge';
+import Claim from '@/components/claim';
 
 export default function Home() {
 
@@ -21,6 +23,8 @@ export default function Home() {
       <ApproveWKLAY />
       <CrowdFundDetails />
       <Pledge />
+      <UnPledge />
+      <Claim />
     </div>
   );
 }
